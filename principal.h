@@ -18,24 +18,23 @@ static void pasar_variables(GtkWidget *widget, GtkWidget *entry);
 static void pasar_restricciones(GtkWidget *widget, GtkWidget *entry);
 //
 static void iniciar_nueva_ventana();
-//
+//inserta los labels y entries para la funcion objetivo
 void insertar_funcion_objetivo(GtkWidget *table);
-//
+//inserta los labels, entries y combos para las restricciones
 void insertar_restricciones(GtkWidget *table);
 //
 static void imprimir_campos();
-//
-static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, 
-    gpointer user_data);
-//
-void pantallaEdicion();
+//guarda en un arreglo las variables que el usuario escribio en la funcion objetivo
+static void guardar_funcion_objetivo();
+//guarda en una matriz las variables q el usuario uso en las restricciones
+static void guardar_restricciones();
 
 
 
 /*************************************/
-/*								                   */
+/*								     */
 /* DECLARACION DE VARIABLES GLOBALES */
-/*							                     */
+/*							         */
 /*************************************/
 
 GtkWidget *window;
@@ -45,7 +44,9 @@ int objetivo = 1;
 int cantidadVariables = 0;
 int cantidadRestricciones = 0;
 GtkWidget **funcionObjetivo;
+float *funcionObjetivoVariables;
 GtkWidget **restricciones;
+float *restriccionesVariables;
 
 
 
@@ -174,13 +175,13 @@ static void iniciar_nueva_ventana()
 
     
     insertar_funcion_objetivo(table);
-    //insertar_restricciones(table);
+    insertar_restricciones(table);
 
-    //button_aceptar = gtk_button_new_with_label ("Aceptar");
-    //gtk_grid_attach (GTK_GRID (table),button_aceptar,1, 2, 1, 1);
+    button_aceptar = gtk_button_new_with_label ("Aceptar");
+    gtk_grid_attach (GTK_GRID (table),button_aceptar,0, 4, 1, 1);
     //Cuando el boton_aceptar es precionado
-    //g_signal_connect(button_aceptar, "clicked", 
-        //G_CALLBACK(imprimir_campos), NULL);
+    g_signal_connect(button_aceptar, "clicked", 
+        G_CALLBACK(guardar_restricciones), NULL);
   
 
     gtk_widget_show_all(dialog);
@@ -188,9 +189,7 @@ static void iniciar_nueva_ventana()
 
 void insertar_funcion_objetivo(GtkWidget *table)
 {
-    funcionObjetivo = realloc(funcionObjetivo,    (cantidadVariables * 
-                                                    (cantidadRestricciones + 1) ) * 
-                                                    sizeof(GtkWidget));    
+    funcionObjetivo = realloc(funcionObjetivo, cantidadVariables * sizeof(GtkWidget));    
     GtkWidget *label, *entrada;
     //Funcion Objetivo
     if (objetivo)
@@ -243,11 +242,8 @@ void insertar_restricciones(GtkWidget *table)
                                             sizeof(GtkWidget));
 
     GtkWidget *label, *entrada, *combo;
-    //Funcion Objetivo
-    if (objetivo)
-    {
-        label = gtk_label_new ("Sujeto a: ");
-    }   
+
+    label = gtk_label_new ("Sujeto a: "); 
     gtk_grid_attach (GTK_GRID (table),label, 0, 2, 1, 1);
 
     int i;
@@ -263,16 +259,16 @@ void insertar_restricciones(GtkWidget *table)
             gtk_entry_set_max_length (GTK_ENTRY (entrada),5);
             gtk_widget_set_size_request(entrada, 5, 5);
 
-            restricciones[i + (k+1) * cantidadVariables] = entrada;
+            restricciones[k + i * cantidadVariables] = entrada;
             
             if(i == 0)
             {            
-                gtk_grid_attach (GTK_GRID (table),entrada, i+1, k+3, 1, 2);
+                gtk_grid_attach (GTK_GRID (table),entrada, i+1, k+3, 1, 1);
             }
             else if(i == (cantidadVariables - 1))
             {
                 label = gtk_label_new("+");
-                gtk_grid_attach (GTK_GRID (table),label, i+1+j, k+3, 1, 2);
+                gtk_grid_attach (GTK_GRID (table),label, i+1+j, k+3, 1, 1);
 
                 gtk_grid_attach (GTK_GRID (table),entrada, i+2+j, k+3, 1, 1); 
                 j++;
@@ -284,14 +280,15 @@ void insertar_restricciones(GtkWidget *table)
                 gtk_grid_attach (GTK_GRID (table),combo, i+2+j, k+3, 1, 1);
                 j++;
 
-                restricciones[i + (k+2) * cantidadVariables] = combo;
+                restricciones[k + (i+1) * cantidadVariables] = combo;
 
                 entrada = gtk_entry_new ();
                 gtk_entry_set_max_length (GTK_ENTRY (entrada),5);
                 gtk_widget_set_size_request(entrada, 5, 5);
                 gtk_grid_attach (GTK_GRID (table),entrada, i+2+j, k+3, 1, 1);
 
-                restricciones[i + (k+3) * cantidadVariables] = entrada;
+                //restricciones[(k+1) + i * cantidadVariables] = entrada;
+                restricciones[k + (i+2) * cantidadVariables] = entrada;
             }
             else
             {            
@@ -305,56 +302,50 @@ void insertar_restricciones(GtkWidget *table)
     }
 }
 
-static void imprimir_campos()
+static void guardar_variables_objetivo()
 {
     int i;
-    for (i = 0; i < 4; i++)
+    funcionObjetivoVariables =  realloc(funcionObjetivoVariables, cantidadVariables* sizeof(float));
+    for (i = 0; i < cantidadVariables; i++)
     {
         GtkWidget *temp = funcionObjetivo[i];
         const gchar *entry_text;
         entry_text = gtk_entry_get_text (GTK_ENTRY (temp));
-        int var = atoi(entry_text); 
-        printf("Var %d = %d\n", i, var);
+        float var = (float) atof(entry_text); 
+        funcionObjetivoVariables[i] = var;
     }
 }
 
-static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, 
-    gpointer user_data)
-{  
-    return FALSE;
-}
-
-/*void pantallaEdicion()
+static void guardar_restricciones()
 {
-    GtkWidget *dialog, *content_area, *scrolled_window, *viewport, *darea;
-
-    GtkWidget *table;
-    //Crea una tabla
-    darea = gtk_drawing_area_new();
-
-    dialog = gtk_dialog_new_with_buttons ("Arbol Optimo", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, 
-                                            GTK_STOCK_OK, GTK_RESPONSE_NONE, NULL);
-    g_signal_connect_swapped (dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
-
-    content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-
-    scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-    gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 10);
-    
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
-                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-
-    gtk_box_pack_start (GTK_BOX (content_area), scrolled_window, TRUE, TRUE, 0);
-    gtk_widget_show (scrolled_window);
-    
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), darea);
-
-    gtk_widget_set_size_request(dialog, 200, 300);
-    int profundo = profundidad(raizOptima);
-    gtk_widget_set_size_request(darea, numero_llaves * 70, 60*(profundo) + 2*((numero_llaves+1) * 25 + 50));
-
-    g_signal_connect(G_OBJECT(darea), "draw", 
-      G_CALLBACK(on_draw_eventOptimo), NULL);
-
-    gtk_widget_show_all(dialog);
-}*/
+    int i;
+    int j;
+    restriccionesVariables =  realloc(restriccionesVariables, (cantidadVariables + 2) * 
+                                                              cantidadRestricciones * 
+                                                              sizeof(float));
+    for (i = 0; i < cantidadRestricciones; i++)
+    {
+        for (j = 0; j < cantidadVariables + 2; j++)
+        {
+            if (j == cantidadVariables)
+            {
+                GtkWidget *temp = restricciones[i + j * cantidadVariables];
+                const gchar *entry_text;
+                entry_text =  gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(temp));
+                printf("%s\t", entry_text);
+            }
+            else
+            {
+                GtkWidget *temp = restricciones[i + j * cantidadVariables];
+                const gchar *entry_text;
+                entry_text = gtk_entry_get_text (GTK_ENTRY (temp));
+                float var = (float) atof(entry_text);
+                printf("%f\t", var);
+            }
+            //float var = 0.0;
+            //funcionObjetivoVariables[i] = var;
+            
+        }        
+        printf("\n");
+    }
+}
