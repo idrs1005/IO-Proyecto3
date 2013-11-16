@@ -147,7 +147,7 @@ static void pasar_restricciones(GtkWidget *widget, GtkWidget *entry)
 
 static void iniciar_nueva_ventana()
 {
-    GtkWidget *dialog, *content_area, *scrolled_window, *viewport, *darea, *table, *button_aceptar;
+    GtkWidget *dialog, *content_area, *scrolled_window, *viewport, *darea, *table, *button_aceptar,*button_guardarModelo;
 
 
     dialog = gtk_dialog_new_with_buttons ("Comparaciones", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, 
@@ -183,6 +183,12 @@ static void iniciar_nueva_ventana()
     g_signal_connect(button_aceptar, "clicked", 
         G_CALLBACK(guardar_restricciones), NULL);
   
+	// Boton guardar modelo, guarda el modelo en un archivo
+	button_guardarModelo = gtk_button_new_with_label ("Guardar Modelo");
+    gtk_grid_attach (GTK_GRID (table),button_guardarModelo,0, 5, 1, 1);
+    //Cuando el boton_guardarModelo es precionado
+    g_signal_connect(button_guardarModelo, "clicked", 
+        G_CALLBACK(guardar_restricciones), NULL);
 
     gtk_widget_show_all(dialog);
 }
@@ -317,12 +323,14 @@ static void guardar_variables_objetivo()
 }
 
 static void guardar_restricciones()
-{
+{	
     int i;
     int j;
     restriccionesVariables =  realloc(restriccionesVariables, (cantidadVariables + 2) * 
                                                               cantidadRestricciones * 
                                                               sizeof(float));
+	FILE *fp;
+	fp = fopen("datos.txt","w");
     for (i = 0; i < cantidadRestricciones; i++)
     {
         for (j = 0; j < cantidadVariables + 2; j++)
