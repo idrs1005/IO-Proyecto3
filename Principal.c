@@ -6,6 +6,11 @@
 #include <gtk/gtk.h>
 #include <math.h>
 
+/*Librerias para directorio*/
+#include <sys/types.h>
+#include <dirent.h>
+#include <string.h>
+#include <assert.h>
 /*Mis librerias .h*/
 #include "principal.h"
 
@@ -84,11 +89,9 @@ int main (int argc, char **argv)
 	//Boton Cargar Modelo que busca un modelo guardado y lo carga para ser ejecutado
     button_cargarModelo = gtk_button_new_with_label ("Cargar Modelo");
     gtk_grid_attach (GTK_GRID (table),button_cargarModelo,0, 4, 1, 1);
-    //Cuando el boton_aceptar es precionado
+    //Cuando el boton_aceptar es precionado    
     g_signal_connect(button_cargarModelo, "clicked", 
-        G_CALLBACK(pasar_variables), txtvariables);
-    g_signal_connect(button_cargarModelo, "clicked", 
-        G_CALLBACK(pasar_restricciones), txtrestricciones);
+        G_CALLBACK(abrir_directorio), txtrestricciones);
     initialize_window(window, 2, 1);
     
     //Abre la interfaz y se queda esperado que el usuario interactue con ella
