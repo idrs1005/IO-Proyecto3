@@ -7,6 +7,11 @@
 #include <math.h>
 #include <float.h>
 
+/*Librerias para directorio*/
+#include <sys/types.h>
+#include <dirent.h>
+#include <string.h>
+#include <assert.h>
 /*Mis librerias .h*/
 #include "principal.h"
 
@@ -16,11 +21,11 @@
   CON LA INTERFAZ.
 */
 int main (int argc, char **argv)
-{
+{	
     GtkWidget *table;
     GtkWidget *label;
     GtkWidget *txtvariables, *txtrestricciones;  
-    GtkWidget *button_aceptar;
+    GtkWidget *button_nuevoModelo,*button_cargarModelo;
     GtkWidget *checkMax, *checkMin;
     
     gtk_init(&argc, &argv);
@@ -74,15 +79,22 @@ int main (int argc, char **argv)
             G_CALLBACK(checkMin_selected), checkMax);
 
     //Boton aceptar que llama a ejecutar TODO dependiendo de los parametros obtenidos
-    button_aceptar = gtk_button_new_with_label ("Aceptar");
-    gtk_grid_attach (GTK_GRID (table),button_aceptar,1, 4, 1, 1);
+    button_nuevoModelo = gtk_button_new_with_label ("Nuevo Modelo");
+    gtk_grid_attach (GTK_GRID (table),button_nuevoModelo,1, 4, 1, 1);
     //Cuando el boton_aceptar es precionado
-    g_signal_connect(button_aceptar, "clicked", 
+    g_signal_connect(button_nuevoModelo, "clicked", 
         G_CALLBACK(pasar_variables), txtvariables);
-    g_signal_connect(button_aceptar, "clicked", 
+    g_signal_connect(button_nuevoModelo, "clicked", 
         G_CALLBACK(pasar_restricciones), txtrestricciones);
-
+	
+	//Boton Cargar Modelo que busca un modelo guardado y lo carga para ser ejecutado
+    button_cargarModelo = gtk_button_new_with_label ("Cargar Modelo");
+    gtk_grid_attach (GTK_GRID (table),button_cargarModelo,0, 4, 1, 1);
+    //Cuando el boton_aceptar es precionado    
+    g_signal_connect(button_cargarModelo, "clicked", 
+        G_CALLBACK(abrir_directorio),  txtrestricciones);
     initialize_window(window, 2, 1);
+    
     //Abre la interfaz y se queda esperado que el usuario interactue con ella
     gtk_main ();
 
