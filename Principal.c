@@ -5,6 +5,7 @@
 #include <cairo.h>
 #include <gtk/gtk.h>
 #include <math.h>
+#include <float.h>
 
 /*Mis librerias .h*/
 #include "principal.h"
