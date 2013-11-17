@@ -21,9 +21,9 @@ static void pasar_restricciones(GtkWidget *widget, GtkWidget *entry);
 //
 static void iniciar_nueva_ventana();
 //inserta los labels y entries para la funcion objetivo
-void insertarNodo_funcion_objetivo(GtkWidget *table);
+void insertar_funcion_objetivo(GtkWidget *table);
 //inserta los labels, entries y combos para las restricciones
-void insertarNodo_restricciones(GtkWidget *table);
+void insertar_restricciones(GtkWidget *table);
 //
 static void imprimir_campos();
 //guarda en un arreglo las variables que el usuario escribio en la funcion objetivo
@@ -231,8 +231,8 @@ static void iniciar_nueva_ventana()
     gtk_widget_set_size_request(dialog, 200, 300);
 
     
-    insertarNodo_funcion_objetivo(table);
-    insertarNodo_restricciones(table);
+    insertar_funcion_objetivo(table);
+    insertar_restricciones(table);
 
     button_aceptar = gtk_button_new_with_label ("Aceptar");
     gtk_grid_attach (GTK_GRID (table),button_aceptar,0, 6, 1, 1);
@@ -304,7 +304,7 @@ static void generarResultados()
     gtk_widget_show_all(dialog);
 }
 
-void insertarNodo_funcion_objetivo(GtkWidget *table)
+void insertar_funcion_objetivo(GtkWidget *table)
 {
     funcionObjetivo = realloc(funcionObjetivo, cantidadVariables * sizeof(GtkWidget));
     GtkWidget *label, *entrada;
@@ -352,7 +352,7 @@ void insertarNodo_funcion_objetivo(GtkWidget *table)
     }
 }
 
-void insertarNodo_restricciones(GtkWidget *table)
+void insertar_restricciones(GtkWidget *table)
 {
     restricciones = realloc(restricciones,  (cantidadVariables + 2) * 
                                             cantidadRestricciones * 
