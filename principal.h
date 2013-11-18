@@ -39,6 +39,12 @@ void abrir_directorio();
 void procesoArchivo(char *archivo);
 // muestra error cuando se leen la carpeta de modelos
 void error(const char *s);
+// ventana con datos cargados
+void iniciar_ventana_cargados();
+// escribe el valor de las variables cargadas en los entry
+void cargar_variables_objetivo();
+// escribe el valor de las restricciones en los entry
+void cargar_restricciones();
 
 /*************************************/
 /*								     */
@@ -349,22 +355,19 @@ static void guardar_restricciones()
             {
                 GtkWidget *temp = restricciones[i + j * cantidadVariables];
                 const gchar *entry_text;
-                entry_text =  gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(temp));
-                printf("%s\t", entry_text);
+                entry_text =  gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(temp));                
             }
             else
             {
                 GtkWidget *temp = restricciones[i + j * cantidadVariables];
                 const gchar *entry_text;
                 entry_text = gtk_entry_get_text (GTK_ENTRY (temp));
-                float var = (float) atof(entry_text);
-                printf("%f\t", var);
+                float var = (float) atof(entry_text);                
             }
             //float var = 0.0;
             //funcionObjetivoVariables[i] = var;
             
         }        
-        printf("\n");
     }
 }
 
@@ -453,9 +456,10 @@ void escribir_archivo()
                 GtkWidget *temp = restricciones[i + j * cantidadVariables];
                 gchar *entry_text;
                 entry_text =  gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(temp));                
+                fprintf(ofp, "%s", "-");
                 fprintf(ofp, "%s", entry_text);
                 fprintf(ofp, "%s", "-");
-            }
+            }	
             else
             {
                 GtkWidget *temp = restricciones[i + j * cantidadVariables];
@@ -540,29 +544,172 @@ void procesoArchivo(char *archivo){
 	   
 	// Lectura de datos de los archivos   
 	char *ch,*objetivo;
-	int i,num_linea,restr;
-	num_linea = 0;	
+	int i,pos,num_var,restr,cant_variables,num_lineas;
+	funcionObjetivoVariables =  realloc(funcionObjetivoVariables, cantidadVariables* sizeof(float));
+	restriccionesVariables =  realloc(restriccionesVariables, (cantidadVariables + 2) * 
+                                                              cantidadRestricciones * 
+                                                              sizeof(float));
+	num_var = pos = 0;	
 	restr = 0;
+	cant_variables = 0;
+	num_lineas = 0;
 	while (fscanf(fich,"%s",line) != EOF) {     
 		ch = strtok(line, "-");
 		i = 0;
 		while (ch != NULL){
-			if(num_linea == 0){
-				objetivo = ch;				
-				printf("%s Funcion:\n ",objetivo);
-			}					
+			// max o min
+			if(num_var == 0){
+				objetivo = ch;								
+			}
+			// valor de varables en funcion objetivo
+			if(num_lineas == 0){				
+				float var = (float) atof(ch); 
+				funcionObjetivoVariables[i] = var;				
+				num_var = -1;
+			}
+			// variables de restricciones
+			if(num_lineas != 0){
+				if (i - 3 == cantidadVariables){
+					//GtkWidget *temp = restricciones[i + j * cantidadVariables];
+					//const gchar *entry_text;
+					//entry_text =  gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(temp));
+					//printf("%s\t", entry_text);					
+                
+					//float var = (float) atof(ch); 
+					//restriccionesVariables[num_var] = var;					
+					num_var--;						
+				}
+				else{
+					float var = (float) atof(ch); 
+					restriccionesVariables[num_var] = var;
+					//printf("%f %i  var = \n", var,num_var);	
+					
+					//GtkWidget *temp = restricciones[num_lineas + i * cantidadVariables];
+					//const gchar *entry_text;
+					//entry_text = gtk_entry_get_text (GTK_ENTRY (temp));
+					//char array[10];
+					//snprintf(array, sizeof(array), "%f", funcionObjetivoVariables[i+1]);
+					//gtk_entry_set_text (GTK_ENTRY (temp),array);
+					//gtk_entry_set_text (GTK_ENTRY (temp),ch);
+					//float var = (float) atof(entry_text);
+					//printf("%f\t", var);
+				}				
+			}								
 			//printf("%i\n", i);
-			printf("%s\n", ch);
+			//printf("%s\n", ch);
 			ch = strtok(NULL, "-");
 			i++;
-			num_linea++;
+			num_var++;
 		}
-		printf("%i\n", i);
+		num_lineas++;
+		if(restr == 0){
+			cant_variables = i - 1;
+		}
+		//printf("%i\n", i);		
 		restr++;	
 	//	printf("%s",line);
 		//printf("\n");
-	}
-   fclose(fich);		   
-   //printf("%s Funcion",objetivo);
+	}	
+	fclose(fich);		   
+	
+	//Actualizacion de datos cargados
+	cantidadVariables = cant_variables;
+	cantidadRestricciones = num_lineas - 1;
+	iniciar_ventana_cargados();
+	cargar_variables_objetivo();
+	cargar_restricciones();
+   
 }
+
+void iniciar_ventana_cargados()
+{
+    GtkWidget *dialog, *content_area, *scrolled_window, *viewport, *darea, *table, *button_aceptar,*button_guardarModelo;
+
+
+    dialog = gtk_dialog_new_with_buttons ("Comparaciones", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, 
+                                            GTK_STOCK_OK, GTK_RESPONSE_NONE, NULL);
+    g_signal_connect_swapped (dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
+
+    
+    table = gtk_grid_new ();
+    content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+
+    scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+    gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 10);
+    
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+    gtk_box_pack_start (GTK_BOX (content_area), scrolled_window, TRUE, TRUE, 0);
+    gtk_widget_show (scrolled_window);
+    
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window), table);
+
+    gtk_widget_set_size_request(dialog, 200, 300);
+
+    
+    insertar_funcion_objetivo(table);
+    insertar_restricciones(table);
+
+    button_aceptar = gtk_button_new_with_label ("Aceptar");
+    gtk_grid_attach (GTK_GRID (table),button_aceptar,0, 6, 1, 1);
+    //Cuando el boton_aceptar es precionado
+    g_signal_connect(button_aceptar, "clicked", 
+        G_CALLBACK(guardar_restricciones), NULL);
+  
+	// Boton guardar modelo, guarda el modelo en un archivo
+	button_guardarModelo = gtk_button_new_with_label ("Guardar Modelo");
+    gtk_grid_attach (GTK_GRID (table),button_guardarModelo,0, 7, 1, 1);
+    //Cuando el boton_guardarModelo es precionado
+    g_signal_connect(button_guardarModelo, "clicked", 
+        G_CALLBACK(guardar_modelo), NULL);
+
+    gtk_widget_show_all(dialog);
+}
+
+
+void cargar_variables_objetivo()
+{
+    int i;    
+    for (i = 0; i < cantidadVariables; i++)
+    {		
+        GtkWidget *temp = funcionObjetivo[i];
+        const gchar *entry_text;        
+        char array[10];
+		snprintf(array, sizeof(array), "%f", funcionObjetivoVariables[i+1]);
+        gtk_entry_set_text (GTK_ENTRY (temp),array);        
+    }    
+}
+
+void cargar_restricciones()
+{	
+    int i;
+    int j;   
+    int pos;
+    pos = 0;	
+    for (i = 0; i < cantidadRestricciones; i++)
+    {
+        for (j = 0; j < cantidadVariables + 2; j++)
+        {
+            if (j == cantidadVariables)
+            {
+                /*Codigo para cargar tipo de funcion*/
+                GtkWidget *temp = restricciones[i + j * cantidadVariables];
+                //const gchar *entry_text;
+                //entry_text = ">=";
+                //gtk_combo_box_text_set_active_text(GTK_COMBO_BOX_TEXT(temp),entry_text);
+                //printf("%s\t", entry_text);
+            }
+            else
+            {				
+				GtkWidget *temp = restricciones[i + j * cantidadVariables];				
+				char array[10];
+				snprintf(array, sizeof(array), "%f", restriccionesVariables[pos]);
+				gtk_entry_set_text (GTK_ENTRY (temp),array);        				           
+            }            
+            pos++;            
+        }        
+    }
+}
+
 

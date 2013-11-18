@@ -91,7 +91,7 @@ int main (int argc, char **argv)
     gtk_grid_attach (GTK_GRID (table),button_cargarModelo,0, 4, 1, 1);
     //Cuando el boton_aceptar es precionado    
     g_signal_connect(button_cargarModelo, "clicked", 
-        G_CALLBACK(abrir_directorio), txtrestricciones);
+        G_CALLBACK(abrir_directorio),  txtrestricciones);
     initialize_window(window, 2, 1);
     
     //Abre la interfaz y se queda esperado que el usuario interactue con ella
