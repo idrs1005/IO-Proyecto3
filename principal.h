@@ -839,10 +839,10 @@ void escribir_archivo()
     int k;
     //Guardar funcion objetivo
     if (objetivo){
-        fprintf(ofp,"%s","max-");
+        fprintf(ofp,"%s","max;");
     }
     else{
-        fprintf(ofp,"%s","min-");
+        fprintf(ofp,"%s","min;");
     }
     
     guardar_variables_objetivo();
@@ -854,7 +854,7 @@ void escribir_archivo()
         float var = (float) atof(entry_text); 
         funcionObjetivoVariables[k] = var;        
         fprintf(ofp, "%f", var);
-		fprintf(ofp, "%s", "-");					
+		fprintf(ofp, "%s", ";");					
     }
     fprintf(ofp,"%s","\n");
     
@@ -869,9 +869,9 @@ void escribir_archivo()
                 GtkWidget *temp = restricciones[i + j * cantidadVariables];
                 gchar *entry_text;
                 entry_text =  gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(temp));                
-                fprintf(ofp, "%s", "-");
+                fprintf(ofp, "%s", ";");
                 fprintf(ofp, "%s", entry_text);
-                fprintf(ofp, "%s", "-");
+                fprintf(ofp, "%s", ";");
             }	
             else
             {
@@ -880,7 +880,7 @@ void escribir_archivo()
                 entry_text = gtk_entry_get_text (GTK_ENTRY (temp));
                 float var = (float) atof(entry_text);                
                 fprintf(ofp, "%f", var);
-				fprintf(ofp, "%s", "-");					
+				fprintf(ofp, "%s", ";");					
             }          
         }        
         fprintf(ofp,"%s","\n");
@@ -967,7 +967,7 @@ void procesoArchivo(char *archivo){
 	cant_variables = 0;
 	num_lineas = 0;
 	while (fscanf(fich,"%s",line) != EOF) {     
-		ch = strtok(line, "-");
+		ch = strtok(line, ";");
 		i = 0;
 		while (ch != NULL){
 			// max o min
@@ -1010,7 +1010,7 @@ void procesoArchivo(char *archivo){
 			}								
 			//printf("%i\n", i);
 			//printf("%s\n", ch);
-			ch = strtok(NULL, "-");
+			ch = strtok(NULL, ";");
 			i++;
 			num_var++;
 		}
