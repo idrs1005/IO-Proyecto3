@@ -379,7 +379,7 @@ static void guardar_modelo(){
 	// Pantalla para escribir nombre del archivo
 	dialog = gtk_dialog_new();
     gtk_window_set_title(GTK_WINDOW(dialog), "Guardar Archivo");    
-    table = gtk_table_new (2,2,TRUE);   	
+    table = gtk_grid_new ();   	
     content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));    
     
     scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -393,16 +393,16 @@ static void guardar_modelo(){
    
     // Objetos de la pantalla
     label = gtk_label_new("Nombre del Archivo:");
-    gtk_table_attach_defaults (GTK_TABLE (table),label, 0, 1, 0, 1);   
+    gtk_grid_attach(GTK_GRID (table),label, 0, 0, 1, 1);   
     
 	nombreArchivo = gtk_entry_new ();
     gtk_entry_set_max_length (GTK_ENTRY (nombreArchivo),15);
     gtk_widget_set_size_request(nombreArchivo, 100, 5);    
-    gtk_table_attach_defaults (GTK_TABLE (table),nombreArchivo, 1, 2, 0, 1);    
+    gtk_grid_attach(GTK_GRID (table),nombreArchivo, 1, 0, 1, 1);    
   
 	// Boton guardar modelo, guarda el modelo en un archivo
 	button_guardarModelo = gtk_button_new_with_label ("Guardar Modelo");
-	gtk_table_attach_defaults (GTK_TABLE (table),button_guardarModelo, 1, 2, 1, 2);
+	gtk_grid_attach(GTK_GRID (table),button_guardarModelo, 1, 2, 1, 2);
     
     //Cuando el boton_guardarModelo es precionado
     g_signal_connect(button_guardarModelo, "clicked", 
@@ -483,7 +483,7 @@ void abrir_directorio()
 	// Ventana para escoger archivo a cargar
 	dialog = gtk_dialog_new();
     gtk_window_set_title(GTK_WINDOW(dialog), "Modelos Existentes");    
-    table = gtk_table_new (2,2,TRUE);   	
+    table = gtk_grid_new ();   	
     content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));    
     
     scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -496,13 +496,13 @@ void abrir_directorio()
     gtk_widget_set_size_request(dialog, 200, 100);
        
     label = gtk_label_new("Modelos existentes:");
-    gtk_table_attach_defaults (GTK_TABLE (table),label, 0, 1, 0, 1);       
+    gtk_grid_attach(GTK_GRID(table),label, 0, 0, 1, 1);       
     // Combo con archivos creados
     comboBoxArchivo =  gtk_combo_box_text_new();                
     
-     // Boton guardar modelo, guarda el modelo en un archivo
+     // Boton aceptar, guarda el modelo en un archivo
 	button_aceptar = gtk_button_new_with_label ("Aceptar");
-	gtk_table_attach_defaults (GTK_TABLE (table),button_aceptar, 1, 2, 1, 2);
+	gtk_grid_attach(GTK_GRID (table),button_aceptar, 1, 2, 1, 2);
     
             
 	// Abrir folder de los modelos guardados
@@ -523,7 +523,7 @@ void abrir_directorio()
 	//Cuando el boton_aceptar es precionado
     g_signal_connect(button_aceptar, "clicked", 
         G_CALLBACK(procesoArchivo), NULL);
-	gtk_table_attach_defaults(GTK_TABLE (table),comboBoxArchivo, 1, 2, 0, 1);
+	gtk_grid_attach(GTK_GRID (table),comboBoxArchivo, 1, 0, 1, 1);
 	gtk_widget_show_all(dialog);      
 }
 
