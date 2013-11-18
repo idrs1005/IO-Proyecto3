@@ -4,8 +4,8 @@
 /* DECLARACION DE LAS FUNCIONES */
 /********************************/
 
-//Inserta un nodo en la raiz de un arbol
-struct nodo* insertar(struct nodo *raiz, int llave, float probabilidad);
+//Inserta un nodo en la lista
+struct nodo* insertarNodo(struct nodo *raiz, int objetive, int *variable, int factible);
 
 /** 
     Estructura del nodo del arbol binario
@@ -15,39 +15,48 @@ struct nodo* insertar(struct nodo *raiz, int llave, float probabilidad);
 **/
 struct nodo 
 {
-    struct nodo *hijoIzquierdo;
-    struct nodo *hijoDerecho;
-    float valorZ;
-    int variables[cantVariables];
+    struct nodo *sgt;
+    int objetivo;
+    int *variables;  
+    int candidata;
 };
 
 /***********************************/
 /* IMPLEMENTACION DE LAS FUNCIONES */
 /***********************************/
 
-struct nodo* insertar(struct nodo *raiz, int llave, float probabilidad)
+struct nodo* insertarNodo(struct nodo *raiz, int objetive, int *variable, int factible)
 {
-    /*Si la raiz es nula inserta*/
-    if(raiz == NULL)
+    if (raiz == NULL)
     {
         raiz = (struct nodo*) malloc(sizeof(struct nodo));
-        raiz->llave = llave;
-        raiz->probabilidad = probabilidad;
-        raiz->hijoIzquierdo = NULL;
-        raiz->hijoDerecho = NULL;
+        raiz->objetivo = objetive;
+        raiz->variables = variable;
+        raiz->candidata = factible;
     }
     else
     {
-        /*Si existe un nodo y el valor es mayor que este va al lado derecho*/
-        if (raiz->llave < llave)
-         {
-            raiz->hijoDerecho = insertar(raiz->hijoDerecho, llave, probabilidad);
-         }
-         /*En caso contrario (> o =), va al lado izquierdo*/
-         else
-         {
-            raiz->hijoIzquierdo = insertar(raiz->hijoIzquierdo, llave, probabilidad);
-         }
+        struct nodo *sgt = raiz->sgt;
+        while(sgt != NULL)
+        {
+            sgt = sgt->sgt;
+        }
+        struct nodo *agregar;
+        agregar->objetivo = objetive;
+        agregar->variables = variable;
+        agregar->candidata = factible;
+        sgt->sgt = agregar;
     }
-    return(raiz);
+    return raiz;
+}
+
+void llenarCeros(struct nodo *raiz, int cantidadVariables)
+{
+    int *array = malloc(cantidadVariables * sizeof(int));
+    int i;
+    for (i = 0; i < cantidadVariables; i++)
+    {
+        array[i] = 0;
+    }
+    raiz->variables = array;
 }
